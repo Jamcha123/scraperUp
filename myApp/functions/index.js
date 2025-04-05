@@ -3,10 +3,9 @@ import * as cheerio from 'cheerio'
 import https from 'https'; 
 import fs from 'fs'
 
-export const scraper = functions.https.onRequest({cors: true}, (req, res) => {
+export const obj = functions.https.onRequest({cors: true}, (req, res) => {
     const site = req.query.site;
-    const select = req.query.select; 
-    const choice = req.query.choice
+    const select = req.query.select;
 
     const link = new URL(site).href; 
     https.get(link, (res1) => {
@@ -16,13 +15,14 @@ export const scraper = functions.https.onRequest({cors: true}, (req, res) => {
         })
         res1.on("end", () => {
             const $ = cheerio.load(data); 
-            const data = $(select).text().split(" "); 
             const arr = []; 
-            data.forEach((e) => {
+            const ans = $(select).text().split(" ");
+            ans.forEach((e) => {
                 arr.push(e); 
             })
-            fs.createWriteStream("data.json", "utf-8").write(JSON.stringify({"data": arr}))
+            let target = JSON.stringify({"data": arr})
+            res.status(200).json(JSON.parse(target))
+            return res.end()
         })
     })
-    fs.createWriteStream("data.json", )
 })

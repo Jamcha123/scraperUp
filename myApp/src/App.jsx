@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-import axios from 'axios'
 import * as cheerio from 'cheerio'
 import {motion} from 'framer-motion'
 import arrow from './assets/arrow.svg'
+import fs from 'fs'
+import axios from 'axios'
 
 function AddNavbar(){
   const [active, setActive] = useState(true)
@@ -70,14 +71,54 @@ function AddScraper(){
   useEffect(() => {
     const site = document.getElementById("url")
     const selector = document.getElementById("selector")
-  
+    const data = document.getElementById("data"); 
+    
     const jsonfile = document.getElementById("json")
-    jsonfile.addEventListener("submit", (e) => {
+    jsonfile.addEventListener("click", async (e) => {
       e.preventDefault()
+
+      const link1 = "/scraper?site=" + site.value + "&select=" + selector.value + ""
+      await axios.get(link1, {
+        url: link1, 
+        responseType: "document", 
+        method: "get"
+      }).then(async (value) => {
+        await axios.post(link1, {user1: "1234"}, {headers: {"Content-Type": "text/json"}}).then((response) => {
+          const arr = []
+          response["data"]["data"].forEach((e) => {
+            arr.push(e)
+          })
+          const blob = new Blob([arr], {type: "text/json"})
+
+          const file = document.createElement("a"); 
+          file.href = URL.createObjectURL(blob)
+          file.download = "data.json"
+          file.click()
+        })
+      })
     })
-    const textfile = document.getElementById("text")
-    textfile.addEventListener("submit", (e) => {
+    const textfile = document.getElementById("text1")
+    textfile.addEventListener("click", async (e) => {
       e.preventDefault()
+
+      const link2 = "https://obj-oegaseo74q-uc.a.run.app?site=" + site.value + "&select=" + selector.value + ""
+      await axios.get(link2, {
+        url: link2, 
+        responseType: "document", 
+        method: "get"
+      }).then(async (value) => {
+        await axios.post(link2, {user1: "1234"}, {headers: {"Content-Type": "text/json"}}).then((response) => {
+          const arr = []
+          response["data"]["data"].forEach((e) => {
+            arr.push(e)
+          })
+
+          data.innerHTML = "<p className='text-xl text-black'>" + arr + "</p>" 
+        })
+        
+      }).catch((err) => {
+        console.log(err)
+      })
     })
   })
   return(
@@ -89,14 +130,14 @@ function AddScraper(){
       <div className="relative w-[100%] min-h-[20em] max-h-[fit-content] " id="data"></div>
       <form action="/" method="get" id="form" className="flex flex-col align-middle justify-center text-center min-w-[50%] min-h-[30vh] ">
         <div className="flex flex-col align-middle justify-center text-center gap-[10px] min-w-[100%] min-h-[5em] ">
-          <input type="text" className="relative w-[50%] h-[3em] m-auto p-[0] text-xl text-center text-black  " id="url" placeholder="enter a URL here" />
-          <input type="text" className="relative w-[50%] h-[3em] m-auto p-[0] text-xl text-center text-black  " id="selector" placeholder="enter a Selector e.g # or ." />
+          <input type="text" className="relative bg-slate-100 w-[50%] h-[3em] m-auto p-[0] text-xl text-center text-black  " id="url" placeholder="enter a URL here" />
+          <input type="text" className="relative bg-slate-100 w-[50%] h-[3em] m-auto p-[0] text-xl text-center text-black  " id="selector" placeholder="enter a Selector e.g # or ." />
         </div>
         <div className="flex mt-[10%] flex-row align-middle justify-center text-center gap-[10px] min-w-[100%] min-h-[5em] ">
-          <motion.button initial={{scale: 1}} whileHover={{scale: 0.9}} whileTap={{scale: 1.1}} type="submit" id="json" className="relative cursor-pointer w-[10em] h-[3em] bg-slate-500 m-0 mr-[5%] p-[0] text-xl text-white ">
-            Generate JSON file
+          <motion.button initial={{scale: 1}} whileHover={{scale: 0.9}} whileTap={{scale: 1.1}} type="button" id="json" className="relative cursor-pointer w-[10em] h-[3em] bg-slate-500 m-0 mr-[5%] p-[0] text-xl text-white ">
+            Create a file for data
           </motion.button>
-          <motion.button initial={{scale: 1}} whileHover={{scale: 0.9}} whileTap={{scale: 1.1}} type="submit" id="text" className="relative cursor-pointer w-[10em] h-[3em] bg-slate-500 m-0 ml-[5%] p-[0] text-xl text-white">
+          <motion.button initial={{scale: 1}} whileHover={{scale: 0.9}} whileTap={{scale: 1.1}} type="button" id="text1" className="relative cursor-pointer w-[10em] h-[3em] bg-slate-500 m-0 ml-[5%] p-[0] text-xl text-white">
             Show Data
           </motion.button>
         </div>
