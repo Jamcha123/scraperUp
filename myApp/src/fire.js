@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'; 
-import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth'; 
+import { getFirestore, collection, addDoc, setDoc, doc, getDoc, getDocs } from 'firebase/firestore'; 
+import { getAuth, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'; 
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'; 
 
 const config = {
@@ -20,4 +21,19 @@ const appcheck = initializeAppCheck(app, {
 })
 
 const auth = getAuth(app)
-auth.useDeviceLanguage()
+auth.useDeviceLanguage();
+
+const db = getFirestore(app); 
+
+const git = new GithubAuthProvider(auth); 
+git.addScope("https://github.com/Jamcha123/scraperweb"); 
+
+const google = new GoogleAuthProvider(auth)
+
+onAuthStateChanged(auth, async (user) => {
+    if(user === null){
+        console.log("user, not found")
+    }else{
+        console.log("user logged in")
+    }
+})

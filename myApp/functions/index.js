@@ -1,7 +1,9 @@
 import * as functions from 'firebase-functions'
+import * as admin from 'firebase-admin'; 
 import * as cheerio from 'cheerio'
 import https from 'https'; 
 import fs from 'fs'
+import { randomBytes } from 'crypto'; 
 
 export const obj = functions.https.onRequest({cors: true}, (req, res) => {
     const site = req.query.site;
