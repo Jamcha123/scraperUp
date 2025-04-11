@@ -1,7 +1,8 @@
 import { initializeApp } from 'firebase/app'; 
-import { getFirestore, collection, addDoc, setDoc, doc, getDoc, getDocs } from 'firebase/firestore'; 
+import { getFirestore, collection, addDoc, setDoc, doc, getDoc, getDocs, deleteField } from 'firebase/firestore'; 
 import { getAuth, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'; 
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'; 
+import axios from 'axios';
 
 const config = {
     apiKey: "",
@@ -37,3 +38,33 @@ onAuthStateChanged(auth, async (user) => {
         console.log("user logged in")
     }
 })
+onAuthStateChanged(auth, (user) => {
+    if(user !== null){
+      document.getElementById("create").addEventListener("click", async (e) => {
+        const webby = await axios.get("https://gettoken-oegaseo74q-uc.a.run.app")
+
+        const readIndex = await getDoc(doc(db, "/secrets/indices"))
+        let nums = 0; 
+        if(readIndex.get("index") != null){
+            nums = Number.parseInt(readIndex.get("index"))
+        }else{
+            nums = 0; 
+            await setDoc(doc(db, "/secrets/indices"), {
+                index: nums
+            })
+        }
+        const ans = {}
+        ans[nums.toString()] = webby["data"]
+
+        await setDoc(doc(db, "/secrets/" + user.uid + "/keys/" + nums.toString() ), ans); 
+        nums += 1
+        await setDoc(doc(db, "/secrets/indices"), {
+            index: nums
+        })
+      })
+    }else{
+        document.getElementById("create").addEventListener("click", (e) => {
+            alert("cannot create tokens until logged in") 
+        })
+    }
+  })

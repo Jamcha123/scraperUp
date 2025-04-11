@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import * as cheerio from 'cheerio'
+import $1 from 'jquery'
 import {motion} from 'framer-motion'
 import arrow from './assets/arrow.svg'
 import google from './assets/google.svg'
 import git from './assets/git.svg'
 import './fire.js'
+import del from './assets/delete.svg'
 import axios from 'axios'
 import { initializeApp } from 'firebase/app'; 
-import { getFirestore } from 'firebase/firestore'; 
+import { doc, getDoc, getFirestore } from 'firebase/firestore'; 
 import { createUserWithEmailAndPassword, getAuth, GithubAuthProvider, GoogleAuthProvider, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth'; 
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'; 
 
@@ -171,6 +173,50 @@ function AddKeys(){
   const [active, setActive] = useState(false)
   const page = document.getElementById("LoginPage"); 
   useEffect(() => {
+    document.getElementById("getlogin").addEventListener("click", (e) => {
+      e.preventDefault()
+      onAuthStateChanged(auth, (user) => {
+        if(user === null){
+          document.getElementById("LoginPage").style.display = "block"
+        }else{
+          alert("you are already logged in")
+        }
+      })
+    })
+    onAuthStateChanged(auth, async (user) => {
+      if(user !== null){
+        document.getElementById("create").addEventListener("click", async (e) => {
+          e.preventDefault(); 
+          const index = await getDoc(doc(db, "/secrets/indices"))
+          if(index.get("index") != null){
+            const limit = index.get("index")
+          
+            const keys = await getDoc(doc(db, "/secrets/" + user.uid + "/keys/" + (limit-1).toString() + "/"))
+            console.log(keys.get((limit-1).toString()))
+  
+            let image = document.createElement("img")
+            image.setAttribute("id", "delete")
+            image.src = del
+            image.alt = "not found"
+            image.style.width = 3 + "em"
+            image.style.height = 2 + "em"
+            image.style.cursor = "pointer"
+  
+            let text = document.createElement("h2")
+            text.innerText = keys.get((limit-1).toString())
+            
+            let x = document.createElement("div"); 
+            x.classList.add("keys");
+            x.appendChild(text)
+            x.appendChild(image)
+  
+            document.getElementById("tokens").appendChild(x)
+          }
+        })
+      }else{
+        alert("cannot create API tokens until you login")
+      }
+    })
   })
   return(
     <motion.section id="keys" initial={{translateY: 0 + "%"}} className="flex mr-[0%] flex-col align-middle justify-center text-center min-h-[100vh] min-w-[100%] z-[100] ">
@@ -178,23 +224,29 @@ function AddKeys(){
         <div className="flex flex-row align-middle justify-start text-start min-h-[5vh] min-w-[100%] ">
           <h1 className="text-3xl text-black ml-[25%]">API Keys</h1>
         </div>
-        <div className="flex flex-row align-middle justify-start text-start min-h-[4vh] min-w-[100%] ">
+        <div className="flex flex-row align-middle justify-start text-start min-h-[3vh] min-w-[100%] ">
           <p className="text-xl text-black ml-[25%]">
-            To Generate API tokens, you have to <a href="" className="underline-offset-2 underline text-violet-600">login here</a> first
+            To Generate API tokens, you have to <a href="" id="getlogin" className="underline-offset-2 underline text-violet-600">login here</a> first
           </p>
         </div>
-        <div className="flex flex-row align-middle justify-start text-start min-h-[4vh] min-w-[100%] ">
+        <div className="flex flex-row align-middle justify-start text-start min-h-[3vh] min-w-[100%] ">
           <p className="text-xl text-black ml-[25%]">
             Keep the API tokens secure
           </p>
         </div>
+        <div className="flex flex-row align-middle justify-start text-start min-h-[3vh] min-w-[100%] ">
+          <p className="text-xl text-black ml-[25%]">
+            Press generate token to generate keys
+          </p>
+        </div>
       </div>
-      <div className="flex flex-row align-middle justify-center text-center min-h-[6vh] min-w-[100%] mt-[5%] ">
-          <motion.button id="create" initial={{scale: 1}} whileHover={{scale: 0.9}} whileTap={{scale: 1.1}} className="relative w-[9em] h-[100%] rounded-md border-violet-700 border-[2px] m-auto p-[0] bg-sky-800 text-sky-300 text-2xl cursor-pointer  ">
+      <div className="flex flex-row align-middle justify-center text-center min-h-[5vh] min-w-[100%] mt-[5%] ">
+          <motion.button id="create" initial={{scale: 1}} whileHover={{scale: 0.9}} whileTap={{scale: 1.1}} className="relative w-[9em] h-[100%] rounded-md border-transparent border-[2px] m-auto p-[0] bg-lime-900 text-white text-2xl cursor-pointer  ">
             + Generate Tokens
           </motion.button>
         </div>
-      <div id="tokens" className="flex flex-col align-middle justify-center text-center min-w-[100%] h-[79vh] ">
+      <div id="tokens" className="flex flex-col align-top justify-start text-start min-w-[100%] h-[79vh] ">
+
       </div>
     </motion.section>
   )
@@ -233,6 +285,13 @@ function AddLogin(){
       }).catch((err) => {
         alert(err)
       })
+    })
+    onAuthStateChanged(auth, (user) => {
+      if(user !== null){
+        document.getElementById("LoginPage").style.display = "none"
+      }else{
+        document.getElementById("LoginPage").style.display = "none"
+      }
     })
   })
   return(

@@ -3,8 +3,14 @@ import * as admin from 'firebase-admin';
 import * as cheerio from 'cheerio'
 import https from 'https'; 
 import fs from 'fs'
-import { randomBytes } from 'crypto'; 
+import { createHash, randomBytes } from 'crypto'; 
 
+export const GetToken = functions.https.onRequest({cors: true}, (req, res) => {
+    const tokens = "SK" + randomBytes(32).toString("hex")
+    
+    res.status(200).send(tokens)
+    return res.end(); 
+})
 export const obj = functions.https.onRequest({cors: true}, (req, res) => {
     const site = req.query.site;
     const select = req.query.select;
